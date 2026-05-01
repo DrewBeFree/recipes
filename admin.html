@@ -152,6 +152,10 @@
         <textarea id="f-desc" placeholder="Short note about this recipe..."></textarea>
       </div>
       <div class="form-group full">
+        <label>Instructions (optional — paste recipe steps here)</label>
+        <textarea id="f-instructions" placeholder="Paste ingredients, steps, notes..." style="min-height:160px;"></textarea>
+      </div>
+      <div class="form-group full">
         <label>Image URL (optional)</label>
         <input type="text" id="f-image" placeholder="https://...">
       </div>
@@ -249,6 +253,7 @@ function openForm(id) {
     document.getElementById('f-category').value = r.category;
     document.getElementById('f-tags').value = (r.tags || []).join(', ');
     document.getElementById('f-desc').value = r.description || '';
+    document.getElementById('f-instructions').value = r.instructions || '';
     document.getElementById('f-image').value = r.image_url || '';
   } else {
     document.getElementById('f-title').value = '';
@@ -256,6 +261,7 @@ function openForm(id) {
     document.getElementById('f-category').value = 'Dinner';
     document.getElementById('f-tags').value = '';
     document.getElementById('f-desc').value = '';
+    document.getElementById('f-instructions').value = '';
     document.getElementById('f-image').value = '';
   }
 
@@ -276,6 +282,7 @@ function getFormData() {
     category: document.getElementById('f-category').value,
     tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean),
     description: document.getElementById('f-desc').value.trim(),
+    instructions: document.getElementById('f-instructions').value.trim(),
     image_url: document.getElementById('f-image').value.trim() || null,
   };
 }
