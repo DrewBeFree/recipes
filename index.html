@@ -62,8 +62,13 @@
 
   .rc-img { width: 100%; height: 120px; object-fit: cover; border-radius: 2px; margin-bottom: 14px; border: 1px solid var(--border); }
 
-  .rc-instructions { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); font-family: 'Exo 2', sans-serif; font-size: 0.76rem; color: var(--text-mid); line-height: 1.7; white-space: pre-wrap; font-weight: 300; }
+  .rc-instructions { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); font-family: 'Exo 2', sans-serif; font-size: 0.76rem; color: var(--text-mid); line-height: 1.6; font-weight: 300; }
   .rc-instructions.open { display: block; }
+  .rc-instructions .ri-header { color: var(--text); font-weight: 600; margin-top: 12px; margin-bottom: 4px; letter-spacing: 1px; }
+  .rc-instructions .ri-header:first-child { margin-top: 0; }
+  .rc-instructions ul { padding-left: 16px; margin: 2px 0 8px; }
+  .rc-instructions li { margin-bottom: 2px; }
+  .rc-instructions .ri-line { margin-bottom: 2px; }
   .rc-toggle { font-size: 0.6rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; cursor: pointer; background: none; border: none; padding: 0; font-family: 'Share Tech Mono', monospace; transition: color 0.2s; }
   .rc-toggle:hover { color: var(--accent); }
 
@@ -186,9 +191,41 @@ function render() {
         ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener" class="rc-launch">VIEW RECIPE ›</a>` : `<span class="rc-no-link">NO LINK</span>`}
         ${r.instructions ? `<button class="rc-toggle" onclick="toggleInstructions(this)">SHOW STEPS ↓</button>` : ''}
       </div>
-      ${r.instructions ? `<div class="rc-instructions">${r.instructions.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}
+      ${r.instructions ? `<div class="rc-instructions">${formatInstructions(r.instructions)}</div>` : ''}
     </div>
   `).join('');
+}
+
+function formatInstructions(text) {
+  const lines = text.split('\n');
+  const collapsed = [];
+  let blanks = 0;
+  for (const l of lines) {
+    if (l.trim() === '') { if (++blanks <= 1) collapsed.push(''); }
+    else { blanks = 0; collapsed.push(l.trim()); }
+  }
+
+  const html = [];
+  let inList = false;
+  for (const line of collapsed) {
+    if (line === '') {
+      if (inList) { html.push('</ul>'); inList = false; }
+      continue;
+    }
+    const safe = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (/^[-*•]\s/.test(line) || /^\d+[.)]\s/.test(line)) {
+      if (!inList) { html.push('<ul>'); inList = true; }
+      html.push(`<li>${safe.replace(/^[-*•]\s*/,'').replace(/^\d+[.)]\s*/,'')}</li>`);
+    } else if (line.endsWith(':') && line.length < 60) {
+      if (inList) { html.push('</ul>'); inList = false; }
+      html.push(`<div class="ri-header">${safe}</div>`);
+    } else {
+      if (inList) { html.push('</ul>'); inList = false; }
+      html.push(`<div class="ri-line">${safe}</div>`);
+    }
+  }
+  if (inList) html.push('</ul>');
+  return html.join('');
 }
 
 function toggleInstructions(btn) {

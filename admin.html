@@ -287,9 +287,23 @@ function getFormData() {
   };
 }
 
+async function fetchMealImage(title) {
+  try {
+    const res = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(title)}`);
+    const json = await res.json();
+    if (json.meals && json.meals[0]) return json.meals[0].strMealThumb;
+  } catch {}
+  return null;
+}
+
 async function saveRecipe() {
   const data = getFormData();
   if (!data.title) { alert('Title is required.'); return; }
+
+  if (!data.image_url) {
+    const img = await fetchMealImage(data.title);
+    if (img) data.image_url = img;
+  }
 
   let error;
   if (editingId) {
