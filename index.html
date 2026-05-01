@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipes · food.drewbefree.com</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0e;
+    --bg2: #080f14;
+    --panel: #0a1520;
+    --border: #0d2535;
+    --accent: #f97316;
+    --accent2: #00ff88;
+    --text: #c8e8f0;
+    --text-dim: #3a6070;
+    --text-mid: #6a9ab0;
+    --glow: rgba(249,115,22,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Share Tech Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+  body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px); pointer-events:none; z-index:1000; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px 80px; position: relative; z-index: 1; }
+
+  header { padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 40px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .logo-eyebrow { font-size: 0.65rem; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 8px; }
+  .logo { font-family: 'Orbitron', sans-serif; font-size: clamp(1.8rem,5vw,3rem); font-weight: 900; color: #fff; letter-spacing: 2px; }
+  .logo span { color: var(--accent); text-shadow: 0 0 24px rgba(249,115,22,0.5); }
+  .logo-sub { font-size: 0.68rem; color: var(--text-mid); letter-spacing: 3px; margin-top: 8px; }
+  .header-link { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 2px; text-decoration: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 2px; transition: color 0.2s, border-color 0.2s; }
+  .header-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 28px; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap::before { content: '⌕'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 1rem; pointer-events: none; }
+  #search { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; padding: 10px 12px 10px 34px; border-radius: 2px; outline: none; letter-spacing: 1px; transition: border-color 0.2s; }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--text-dim); }
+
+  .cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+  .cat-btn { font-family: 'Share Tech Mono', monospace; font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase; padding: 5px 14px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); border-radius: 2px; cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s; }
+  .cat-btn:hover, .cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,0.07); }
+
+  .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+  .recipe-card { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 22px; position: relative; text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; overflow: hidden; }
+  .recipe-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; transition:opacity 0.3s; }
+  .recipe-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px var(--glow); }
+  .recipe-card:hover::before { opacity: 1; }
+
+  .rc-category { font-size: 0.58rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; opacity: 0.8; }
+  .rc-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: #fff; letter-spacing: 1px; margin-bottom: 8px; line-height: 1.4; }
+  .rc-desc { font-family: 'Exo 2', sans-serif; font-size: 0.78rem; color: var(--text-mid); line-height: 1.6; margin-bottom: 14px; font-weight: 300; flex: 1; }
+  .rc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+  .rc-tag { font-size: 0.56rem; letter-spacing: 2px; text-transform: uppercase; padding: 2px 7px; border: 1px solid var(--border); color: var(--text-dim); border-radius: 2px; }
+  .rc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); margin-top: auto; }
+  .rc-launch { font-size: 0.65rem; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+  .rc-no-link { font-size: 0.65rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+
+  .rc-img { width: 100%; height: 120px; object-fit: cover; border-radius: 2px; margin-bottom: 14px; border: 1px solid var(--border); }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 0.78rem; letter-spacing: 2px; }
+
+  .loading { text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 0.78rem; letter-spacing: 2px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  footer { padding-top: 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 2px; margin-top: 40px; }
+
+  @media (max-width: 600px) {
+    .recipe-grid { grid-template-columns: 1fr; }
+    header { padding: 32px 0 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="logo-eyebrow">// RECIPE COLLECTION · ONLINE</div>
+      <div class="logo">FOOD<span>.</span>DB</div>
+      <div class="logo-sub">DREWBEFREE · ATL, GA</div>
+    </div>
+    <a href="admin.html" class="header-link">ADMIN ›</a>
+  </header>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="Search recipes..." autocomplete="off">
+    </div>
+  </div>
+
+  <div class="cats" id="cats">
+    <button class="cat-btn active" data-cat="All">All</button>
+  </div>
+
+  <div class="recipe-grid" id="grid">
+    <div class="loading">LOADING RECIPES...</div>
+  </div>
+
+  <footer>
+    <span>FOOD.DREWBEFREE.COM</span>
+    <span id="recipe-count"></span>
+  </footer>
+
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allRecipes = [];
+let activeCategory = 'All';
+
+async function loadRecipes() {
+  const { data, error } = await db
+    .from('recipes')
+    .select('*')
+    .order('title', { ascending: true });
+  if (error) {
+    document.getElementById('grid').innerHTML = '<div class="empty-state">ERROR LOADING RECIPES</div>';
+    return;
+  }
+  allRecipes = data || [];
+  buildCategoryTabs();
+  render();
+}
+
+function buildCategoryTabs() {
+  const usedCats = [...new Set(allRecipes.map(r => r.category))].sort();
+  const catsEl = document.getElementById('cats');
+  catsEl.innerHTML = '<button class="cat-btn active" data-cat="All">All</button>';
+  usedCats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.dataset.cat = cat;
+    btn.textContent = cat;
+    btn.addEventListener('click', () => setCategory(cat));
+    catsEl.appendChild(btn);
+  });
+  catsEl.querySelector('[data-cat="All"]').addEventListener('click', () => setCategory('All'));
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  render();
+}
+
+function render() {
+  const query = document.getElementById('search').value.toLowerCase().trim();
+  let recipes = allRecipes;
+  if (activeCategory !== 'All') recipes = recipes.filter(r => r.category === activeCategory);
+  if (query) recipes = recipes.filter(r =>
+    r.title.toLowerCase().includes(query) ||
+    (r.description || '').toLowerCase().includes(query) ||
+    (r.tags || []).some(t => t.toLowerCase().includes(query))
+  );
+
+  const grid = document.getElementById('grid');
+  document.getElementById('recipe-count').textContent = `${recipes.length} RECIPE${recipes.length !== 1 ? 'S' : ''}`;
+
+  if (recipes.length === 0) {
+    grid.innerHTML = '<div class="empty-state">NO RECIPES FOUND</div>';
+    return;
+  }
+
+  grid.innerHTML = recipes.map(r => `
+    <a class="recipe-card" ${r.url ? `href="${r.url}" target="_blank" rel="noopener"` : ''}>
+      ${r.image_url ? `<img class="rc-img" src="${r.image_url}" alt="" loading="lazy">` : ''}
+      <div class="rc-category">${r.category}</div>
+      <div class="rc-title">${r.title}</div>
+      ${r.description ? `<div class="rc-desc">${r.description}</div>` : '<div class="rc-desc"></div>'}
+      ${r.tags && r.tags.length ? `<div class="rc-tags">${r.tags.map(t => `<span class="rc-tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="rc-footer">
+        ${r.url ? `<span class="rc-launch">VIEW RECIPE ›</span>` : `<span class="rc-no-link">NO LINK</span>`}
+      </div>
+    </a>
+  `).join('');
+}
+
+document.getElementById('search').addEventListener('input', render);
+loadRecipes();
+</script>
+</body>
+</html>
