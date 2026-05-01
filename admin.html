@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Recipes</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0e;
+    --bg2: #080f14;
+    --panel: #0a1520;
+    --border: #0d2535;
+    --accent: #f97316;
+    --accent2: #00ff88;
+    --danger: #ef4444;
+    --text: #c8e8f0;
+    --text-dim: #3a6070;
+    --text-mid: #6a9ab0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Share Tech Mono', monospace; min-height: 100vh; }
+  body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px); pointer-events:none; z-index:1000; }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px 80px; position: relative; z-index: 1; }
+
+  /* --- Password gate --- */
+  #gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .gate-box { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 40px; width: 100%; max-width: 360px; text-align: center; }
+  .gate-title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: 3px; margin-bottom: 8px; }
+  .gate-sub { font-size: 0.62rem; color: var(--text-dim); letter-spacing: 2px; margin-bottom: 28px; }
+  .gate-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; padding: 10px 14px; border-radius: 2px; outline: none; text-align: center; letter-spacing: 3px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .gate-input:focus { border-color: var(--accent); }
+  .gate-btn { width: 100%; background: var(--accent); border: none; color: #fff; font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 3px; padding: 11px; border-radius: 2px; cursor: pointer; text-transform: uppercase; transition: opacity 0.2s; }
+  .gate-btn:hover { opacity: 0.85; }
+  .gate-error { font-size: 0.62rem; color: var(--danger); letter-spacing: 2px; margin-top: 12px; min-height: 18px; }
+
+  /* --- Admin UI --- */
+  #app { display: none; }
+
+  header { padding: 40px 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .logo { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 700; color: #fff; letter-spacing: 2px; }
+  .logo span { color: var(--accent); }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+  .btn { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; padding: 7px 16px; border-radius: 2px; cursor: pointer; transition: opacity 0.2s; }
+  .btn-primary { background: var(--accent); border: none; color: #fff; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-dim); text-decoration: none; display: inline-flex; align-items: center; }
+  .btn:hover { opacity: 0.8; }
+
+  /* --- Form --- */
+  .form-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 28px; margin-bottom: 32px; display: none; }
+  .form-panel.open { display: block; }
+  .form-title { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; letter-spacing: 2px; color: var(--accent); margin-bottom: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.58rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
+  input[type=text], textarea, select {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; padding: 9px 12px;
+    border-radius: 2px; outline: none; width: 100%; letter-spacing: 1px; transition: border-color 0.2s;
+  }
+  input[type=text]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+  select option { background: var(--panel); }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+  .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+
+  /* --- Recipe list --- */
+  .section-label { font-size: 0.62rem; color: var(--text-dim); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .recipe-list { display: flex; flex-direction: column; gap: 8px; }
+  .recipe-row { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; }
+  .rr-info { flex: 1; min-width: 0; }
+  .rr-title { font-size: 0.82rem; color: #fff; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rr-meta { font-size: 0.6rem; color: var(--text-dim); letter-spacing: 2px; margin-top: 3px; }
+  .rr-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-sm { font-size: 0.58rem; padding: 4px 10px; }
+
+  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-size: 0.75rem; letter-spacing: 2px; }
+  .loading { text-align: center; padding: 40px; color: var(--text-dim); font-size: 0.75rem; letter-spacing: 2px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--accent2); color: #050a0e; font-size: 0.68rem; letter-spacing: 2px; padding: 10px 20px; border-radius: 2px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-title">ADMIN ACCESS</div>
+    <div class="gate-sub">RECIPE COLLECTION · RESTRICTED</div>
+    <input type="password" class="gate-input" id="pw-input" placeholder="••••••••" autocomplete="current-password">
+    <button class="gate-btn" id="pw-submit">ENTER</button>
+    <div class="gate-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- Admin App -->
+<div id="app">
+<div class="wrap">
+
+  <header>
+    <div class="logo">FOOD<span>.</span>DB <span style="font-size:0.65rem;color:var(--text-dim);letter-spacing:3px;">ADMIN</span></div>
+    <div class="header-actions">
+      <a href="index.html" class="btn btn-outline">← BROWSE</a>
+      <button class="btn btn-primary" id="btn-add">+ ADD RECIPE</button>
+    </div>
+  </header>
+
+  <!-- Add / Edit Form -->
+  <div class="form-panel" id="form-panel">
+    <div class="form-title" id="form-title">ADD RECIPE</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Title *</label>
+        <input type="text" id="f-title" placeholder="Grandma's Lasagna">
+      </div>
+      <div class="form-group full">
+        <label>URL (link to recipe)</label>
+        <input type="text" id="f-url" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="f-category">
+          <option>Breakfast</option>
+          <option>Lunch</option>
+          <option>Dinner</option>
+          <option>Desserts</option>
+          <option>Snacks</option>
+          <option>Sides</option>
+          <option>Drinks</option>
+          <option>Uncategorized</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tags (comma-separated)</label>
+        <input type="text" id="f-tags" placeholder="Italian, Pasta, Easy">
+      </div>
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Short note about this recipe..."></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Image URL (optional)</label>
+        <input type="text" id="f-image" placeholder="https://...">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="btn-save">SAVE</button>
+      <button class="btn btn-outline" id="btn-cancel">CANCEL</button>
+      <button class="btn btn-danger btn-sm" id="btn-delete" style="display:none;margin-left:auto;">DELETE</button>
+    </div>
+  </div>
+
+  <div class="section-label">// ALL RECIPES</div>
+  <div class="recipe-list" id="recipe-list">
+    <div class="loading">LOADING...</div>
+  </div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// --- Auth ---
+const SESSION_KEY = 'recipe_admin_auth';
+if (sessionStorage.getItem(SESSION_KEY) === 'true') unlock();
+
+document.getElementById('pw-submit').addEventListener('click', tryAuth);
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryAuth(); });
+
+function tryAuth() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PASSWORD) {
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    unlock();
+  } else {
+    document.getElementById('pw-error').textContent = 'INCORRECT PASSWORD';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+function unlock() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadRecipes();
+}
+
+// --- Data ---
+let recipes = [];
+let editingId = null;
+
+async function loadRecipes() {
+  const { data, error } = await db.from('recipes').select('*').order('title');
+  if (error) { document.getElementById('recipe-list').innerHTML = '<div class="empty-state">ERROR LOADING</div>'; return; }
+  recipes = data || [];
+  renderList();
+}
+
+function renderList() {
+  const el = document.getElementById('recipe-list');
+  if (recipes.length === 0) { el.innerHTML = '<div class="empty-state">NO RECIPES YET — ADD ONE ABOVE</div>'; return; }
+  el.innerHTML = recipes.map(r => `
+    <div class="recipe-row">
+      <div class="rr-info">
+        <div class="rr-title">${r.title}</div>
+        <div class="rr-meta">${r.category}${r.url ? ' · ' + r.url.replace(/^https?:\/\//, '').split('/')[0] : ''}</div>
+      </div>
+      <div class="rr-actions">
+        <button class="btn btn-outline btn-sm" onclick="editRecipe('${r.id}')">EDIT</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- Form ---
+document.getElementById('btn-add').addEventListener('click', () => openForm(null));
+document.getElementById('btn-cancel').addEventListener('click', closeForm);
+document.getElementById('btn-save').addEventListener('click', saveRecipe);
+document.getElementById('btn-delete').addEventListener('click', deleteRecipe);
+
+function openForm(id) {
+  editingId = id;
+  const deleteBtn = document.getElementById('btn-delete');
+  document.getElementById('form-title').textContent = id ? 'EDIT RECIPE' : 'ADD RECIPE';
+  deleteBtn.style.display = id ? 'inline-block' : 'none';
+
+  if (id) {
+    const r = recipes.find(x => x.id === id);
+    document.getElementById('f-title').value = r.title;
+    document.getElementById('f-url').value = r.url || '';
+    document.getElementById('f-category').value = r.category;
+    document.getElementById('f-tags').value = (r.tags || []).join(', ');
+    document.getElementById('f-desc').value = r.description || '';
+    document.getElementById('f-image').value = r.image_url || '';
+  } else {
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-url').value = '';
+    document.getElementById('f-category').value = 'Dinner';
+    document.getElementById('f-tags').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-image').value = '';
+  }
+
+  document.getElementById('form-panel').classList.add('open');
+  document.getElementById('f-title').focus();
+  document.getElementById('form-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeForm() {
+  document.getElementById('form-panel').classList.remove('open');
+  editingId = null;
+}
+
+function getFormData() {
+  return {
+    title: document.getElementById('f-title').value.trim(),
+    url: document.getElementById('f-url').value.trim() || null,
+    category: document.getElementById('f-category').value,
+    tags: document.getElementById('f-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+    description: document.getElementById('f-desc').value.trim(),
+    image_url: document.getElementById('f-image').value.trim() || null,
+  };
+}
+
+async function saveRecipe() {
+  const data = getFormData();
+  if (!data.title) { alert('Title is required.'); return; }
+
+  let error;
+  if (editingId) {
+    ({ error } = await db.from('recipes').update(data).eq('id', editingId));
+  } else {
+    ({ error } = await db.from('recipes').insert(data));
+  }
+
+  if (error) { alert('Error saving: ' + error.message); return; }
+  showToast(editingId ? 'UPDATED' : 'ADDED');
+  closeForm();
+  loadRecipes();
+}
+
+function editRecipe(id) {
+  openForm(id);
+}
+
+async function deleteRecipe() {
+  if (!confirm('Delete this recipe?')) return;
+  const { error } = await db.from('recipes').delete().eq('id', editingId);
+  if (error) { alert('Error deleting: ' + error.message); return; }
+  showToast('DELETED');
+  closeForm();
+  loadRecipes();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
